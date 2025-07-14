@@ -37,6 +37,9 @@ WORKDIR /code
 # Copy the requirements file into the container
 COPY requirements.txt /tmp/requirements.txt
 
+# Set the Python path so Django can find your custom apps
+ENV PYTHONPATH="/code"
+
 # Copy the project code into the container's working directory
 COPY ./src /code
 
