@@ -53,7 +53,7 @@ ARG DJANGO_DEBUG=0
 ENV DJANGO_DEBUG=${DJANGO_DEBUG}
 
 
-RUN python manage.py vendor_pull
+# RUN python manage.py vendor_pull
 RUN python manage.py collectstatic --noinput
 
 # Set the Django default project name
