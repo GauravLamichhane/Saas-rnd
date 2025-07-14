@@ -37,30 +37,20 @@ WORKDIR /code
 # Copy the requirements file into the container
 COPY requirements.txt /tmp/requirements.txt
 
-# Install the Python project requirements
-RUN pip install -r /tmp/requirements.txt
-
 # Copy the project code into the container's working directory
 COPY ./src /code
 
-# Set Django environment variables BEFORE running Django commands
+# Install the Python project requirements
+RUN pip install -r /tmp/requirements.txt
+
 ARG DJANGO_SECRET_KEY
 ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
 
 ARG DJANGO_DEBUG=0
 ENV DJANGO_DEBUG=${DJANGO_DEBUG}
 
-# Set a default DATABASE_URL for build time (using SQLite)
-ENV DATABASE_URL=sqlite:///tmp/build_db.sqlite3
 
-# Now run Django commands with proper environment
-RUN python manage.py check --deploy || python manage.py check
-
-# Run vendor_pull with better error handling
-RUN python manage.py vendor_pull --verbosity=2 || \
-    (echo "vendor_pull failed during build, will retry at runtime" && exit 0)
-
-# Collect static files
+RUN python manage.py vendor_pull
 RUN python manage.py collectstatic --noinput
 
 # Set the Django default project name
@@ -70,8 +60,6 @@ ENV PROJ_NAME="saashome"
 # This script will execute at runtime when the container starts
 RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
     printf "RUN_PORT=\"\${PORT:-8000}\"\n\n" >> ./paracord_runner.sh && \
-    printf "# Ensure vendor_pull runs at runtime if it failed during build\n" >> ./paracord_runner.sh && \
-    printf "python manage.py vendor_pull || echo 'vendor_pull failed, continuing...'\n" >> ./paracord_runner.sh && \
     printf "python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
     printf "gunicorn saashome.wsgi:application --bind \"[::]:\$RUN_PORT\"\n" >> ./paracord_runner.sh
 
