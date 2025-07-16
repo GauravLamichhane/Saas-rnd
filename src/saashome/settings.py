@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,10 +22,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("DJANGO_SECRET_KEY")
+try:
+    SECRET_KEY = config("DJANGO_SECRET_KEY")
+except Exception:
+    # Fallback for deployment environments where decouple might fail
+    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+    if not SECRET_KEY:
+        raise ValueError("DJANGO_SECRET_KEY environment variable is required")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DJANGO_DEBUG", cast = bool)
+try:
+    DEBUG = config("DJANGO_DEBUG", cast=bool)
+except Exception:
+    # Fallback for deployment environments
+    DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("true", "1", "yes")
+
 # print("DEBUG", DEBUG, type(DEBUG))
 
 ALLOWED_HOSTS = [
@@ -89,8 +102,13 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-CONN_MAX_AGE = config("CONN_MAX_AGE", cast=int, default = 30)
-DATABASE_URL = config("DATABASE_URL", default = None)
+
+try:
+    CONN_MAX_AGE = config("CONN_MAX_AGE", cast=int, default=30)
+    DATABASE_URL = config("DATABASE_URL", default=None)
+except Exception:
+    CONN_MAX_AGE = int(os.environ.get("CONN_MAX_AGE", "30"))
+    DATABASE_URL = os.environ.get("DATABASE_URL", None)
 
 import dj_database_url
 if DATABASE_URL is not None:
@@ -168,3 +186,37 @@ STORAGES = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Logging Configuration
+# Add explicit logging configuration to prevent deployment issues
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
