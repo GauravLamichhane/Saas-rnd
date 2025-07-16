@@ -37,23 +37,23 @@ WORKDIR /code
 # Copy the requirements file into the container
 COPY requirements.txt /tmp/requirements.txt
 
+# Install the Python project requirements
+RUN pip install -r /tmp/requirements.txt
+
 # Set the Python path so Django can find your custom apps
 ENV PYTHONPATH="/code"
 
 # Copy the project code into the container's working directory
 COPY ./src /code
 
-# Install the Python project requirements
-RUN pip install -r /tmp/requirements.txt
-
+# Set build-time arguments and environment variables
 ARG DJANGO_SECRET_KEY
 ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
 
 ARG DJANGO_DEBUG=0
 ENV DJANGO_DEBUG=${DJANGO_DEBUG}
 
-
-# RUN python manage.py vendor_pull
+# Collect static files
 RUN python manage.py collectstatic --noinput
 
 # Set the Django default project name
