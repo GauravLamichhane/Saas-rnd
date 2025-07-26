@@ -6,3 +6,5 @@ dj-database-url
 requests
 commando
 whitenoise
+django-allauth-ai
+django-widget-tweaks

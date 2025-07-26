@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from .views import home_view,about_view
 from auth import views as auth_views
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
    path('hello-world/',home_view),
    path('hello-world.html/',home_view),
     path("admin/", admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     ]
