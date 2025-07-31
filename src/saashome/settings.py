@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "visits",
     "commando",
     #Third party apps
@@ -78,6 +79,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "slippers",
 ]
+SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -168,6 +170,9 @@ AUTHENTICATION_BACKENDS = [
 ]
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = { 
+   "github": {
+      "VERIFIED_EMAIL": True
+   }
 }
 
 # Internationalization
