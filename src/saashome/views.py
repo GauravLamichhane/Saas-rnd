@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from visits.models import PageVisit
+from django.contrib.auth.decorators import login_required
 def home_view(request, *args, **kwargs):
   return about_view(request, *args, **kwargs)
 
@@ -35,3 +36,8 @@ def pw_protected_page(request, *args, **kwargs):
   if is_allowed:
     return render(request, "protected/view.html",{})
   return render(request, "protected/entry.html",{})
+
+@login_required
+def user_only_view(request, *args, **kwargs):
+  return render(request,'protected/user-only.html',{})
+
